@@ -313,8 +313,8 @@ li > button:not(.danger-ghost) {
 }
 
 .tab-bar button .tab-icon {
-  font-size: 1.3rem;
-  line-height: 1;
+  width: 22px;
+  height: 22px;
 }
 
 .tab-bar button.active {
