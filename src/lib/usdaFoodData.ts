@@ -1,4 +1,5 @@
 import type { NutritionPer100g } from './foodScaling'
+import { translateFoodNameToEnglish } from './foodNameTranslation'
 
 export interface FoodSearchResult extends NutritionPer100g {
   fdcId: number
@@ -45,6 +46,18 @@ export function parseUsdaSearchResponse(data: unknown): FoodSearchResult[] {
 }
 
 export async function searchFoodByName(query: string): Promise<FoodSearchResult[]> {
+  const results = await performUsdaSearch(query)
+  if (results.length > 0) {
+    return results
+  }
+  const translated = translateFoodNameToEnglish(query)
+  if (!translated) {
+    return results
+  }
+  return performUsdaSearch(translated)
+}
+
+async function performUsdaSearch(query: string): Promise<FoodSearchResult[]> {
   const apiKey = import.meta.env.VITE_USDA_API_KEY
   const url = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=10&api_key=${apiKey}`
   const response = await fetch(url)
