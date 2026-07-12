@@ -26,8 +26,8 @@ Persönliche Progressive-Web-App (PWA) für Alex zum Tracken von Ernährung (Kal
 
 ```
 UserProfile
-  - age, weightKg, heightCm, activityLevel, goal (lose|maintain|gain)
-  - calculatedDailyGoalKcal   // via Mifflin-St-Jeor TDEE-Formel
+  - age, sex (male|female), weightKg, heightCm, activityLevel, goal (lose|maintain|gain)
+  - calculatedDailyGoalKcal   // via Mifflin-St-Jeor TDEE-Formel (Formel unterscheidet nach sex)
   - manualDailyGoalKcal?      // überschreibt calculatedDailyGoalKcal, falls gesetzt
 
 FoodEntry
@@ -70,3 +70,4 @@ WorkoutEntry
 
 - GitHub Actions Workflow: Push auf `main` → `npm run build` → Deploy auf GitHub Pages.
 - Einmalige Installation: App-URL in Safari öffnen → "Zum Home-Bildschirm hinzufügen".
+- **Repo-Sichtbarkeit:** `apmc137/fittening` ist **öffentlich** — GitHub Pages für private Repos erfordert einen kostenpflichtigen Plan (Pro/Team), den der Account nicht hat. Unkritisch, da keine persönlichen Daten im Code liegen (alle Nutzerdaten bleiben lokal auf dem Gerät, siehe Nicht-Ziele/Architektur).
