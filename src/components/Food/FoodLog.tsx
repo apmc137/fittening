@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BarcodeScanner } from './BarcodeScanner'
 import { FoodSearch } from './FoodSearch'
+import { ManualFoodEntry } from './ManualFoodEntry'
 import { lookupBarcode } from '../../lib/openFoodFacts'
 import { scaleToQuantity } from '../../lib/foodScaling'
 import type { NutritionPer100g } from '../../lib/foodScaling'
 import { db } from '../../db/db'
 import { todayDateString } from '../../lib/date'
-import type { FoodSource } from '../../db/types'
+import type { FoodEntry, FoodSource } from '../../db/types'
 import type { FoodSearchResult } from '../../lib/usdaFoodData'
 
-type Mode = 'idle' | 'scan' | 'search'
+type Mode = 'idle' | 'scan' | 'search' | 'manual'
 
 interface PendingLookup extends NutritionPer100g {
   productName: string
@@ -22,6 +23,16 @@ export function FoodLog() {
   const [pending, setPending] = useState<PendingLookup | null>(null)
   const [quantity, setQuantity] = useState(100)
   const [error, setError] = useState<string | null>(null)
+  const [todayEntries, setTodayEntries] = useState<FoodEntry[]>([])
+
+  useEffect(() => {
+    void refreshTodayEntries()
+  }, [])
+
+  async function refreshTodayEntries() {
+    const entries = await db.foodEntries.where('date').equals(todayDateString()).toArray()
+    setTodayEntries(entries)
+  }
 
   async function handleBarcodeDetected(barcode: string) {
     setMode('idle')
@@ -58,6 +69,17 @@ export function FoodLog() {
       ...scaled,
     })
     setPending(null)
+    await refreshTodayEntries()
+  }
+
+  async function handleManualSaved() {
+    setMode('idle')
+    await refreshTodayEntries()
+  }
+
+  async function handleDelete(id: number) {
+    await db.foodEntries.delete(id)
+    await refreshTodayEntries()
   }
 
   return (
@@ -69,6 +91,7 @@ export function FoodLog() {
         <div>
           <button onClick={() => setMode('scan')}>Barcode scannen</button>
           <button onClick={() => setMode('search')}>Lebensmittel suchen</button>
+          <button onClick={() => setMode('manual')}>Manuell eintragen</button>
         </div>
       )}
 
@@ -77,6 +100,8 @@ export function FoodLog() {
       )}
 
       {mode === 'search' && <FoodSearch onSelect={handleSearchSelect} onCancel={() => setMode('idle')} />}
+
+      {mode === 'manual' && <ManualFoodEntry onSaved={handleManualSaved} onCancel={() => setMode('idle')} />}
 
       {pending && (
         <div>
@@ -90,6 +115,16 @@ export function FoodLog() {
           <button onClick={() => setPending(null)}>Abbrechen</button>
         </div>
       )}
+
+      <h2>Heute</h2>
+      <ul>
+        {todayEntries.map((entry) => (
+          <li key={entry.id}>
+            {entry.productName} — {entry.kcal} kcal ({entry.quantity}g)
+            <button onClick={() => handleDelete(entry.id!)}>Löschen</button>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }
