@@ -4,6 +4,10 @@ import { db } from '../../db/db'
 import { calculateDailyGoalKcal } from '../../lib/tdee'
 import type { ActivityLevel, Goal, Sex } from '../../lib/tdee'
 import type { UserProfile } from '../../db/types'
+import { exportBackup, importBackup } from '../../lib/exportImport'
+import type { BackupData } from '../../lib/exportImport'
+import { todayDateString } from '../../lib/date'
+import type { ChangeEvent } from 'react'
 
 const EMPTY_PROFILE: UserProfile = {
   id: 1,
@@ -33,6 +37,26 @@ export function ProfileScreen() {
     await db.userProfile.put(profile)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+  }
+
+  async function handleExport() {
+    const backup = await exportBackup()
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `fittening-backup-${todayDateString()}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function handleImport(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    const data = JSON.parse(text) as BackupData
+    await importBackup(data)
+    await loadProfile()
   }
 
   const calculatedGoal = calculateDailyGoalKcal(profile)
@@ -116,6 +140,14 @@ export function ProfileScreen() {
         <button type="submit">Speichern</button>
         {saved && <p>Gespeichert!</p>}
       </form>
+      <h2>Backup</h2>
+      <button type="button" onClick={handleExport}>
+        Daten exportieren
+      </button>
+      <label>
+        Daten importieren
+        <input type="file" accept="application/json" onChange={handleImport} />
+      </label>
     </section>
   )
 }
