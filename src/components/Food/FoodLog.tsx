@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { BarcodeScanner } from './BarcodeScanner'
+import { FoodSearch } from './FoodSearch'
 import { lookupBarcode } from '../../lib/openFoodFacts'
 import { scaleToQuantity } from '../../lib/foodScaling'
 import type { NutritionPer100g } from '../../lib/foodScaling'
 import { db } from '../../db/db'
 import { todayDateString } from '../../lib/date'
 import type { FoodSource } from '../../db/types'
+import type { FoodSearchResult } from '../../lib/usdaFoodData'
 
-type Mode = 'idle' | 'scan'
+type Mode = 'idle' | 'scan' | 'search'
 
 interface PendingLookup extends NutritionPer100g {
   productName: string
@@ -37,6 +39,12 @@ export function FoodLog() {
     }
   }
 
+  function handleSearchSelect(result: FoodSearchResult) {
+    setMode('idle')
+    setPending({ ...result, source: 'search' })
+    setQuantity(100)
+  }
+
   async function confirmPending() {
     if (!pending) return
     const scaled = scaleToQuantity(pending, quantity)
@@ -60,12 +68,15 @@ export function FoodLog() {
       {mode === 'idle' && !pending && (
         <div>
           <button onClick={() => setMode('scan')}>Barcode scannen</button>
+          <button onClick={() => setMode('search')}>Lebensmittel suchen</button>
         </div>
       )}
 
       {mode === 'scan' && (
         <BarcodeScanner onDetected={handleBarcodeDetected} onCancel={() => setMode('idle')} />
       )}
+
+      {mode === 'search' && <FoodSearch onSelect={handleSearchSelect} onCancel={() => setMode('idle')} />}
 
       {pending && (
         <div>
