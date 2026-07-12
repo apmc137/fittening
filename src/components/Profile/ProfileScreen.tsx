@@ -22,6 +22,7 @@ const EMPTY_PROFILE: UserProfile = {
 export function ProfileScreen() {
   const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE)
   const [saved, setSaved] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
 
   useEffect(() => {
     void loadProfile()
@@ -53,10 +54,17 @@ export function ProfileScreen() {
   async function handleImport(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
-    const text = await file.text()
-    const data = JSON.parse(text) as BackupData
-    await importBackup(data)
-    await loadProfile()
+    setImportError(null)
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text) as BackupData
+      await importBackup(data)
+      await loadProfile()
+    } catch {
+      setImportError('Import fehlgeschlagen. Bitte prüfe die Datei.')
+    } finally {
+      event.target.value = ''
+    }
   }
 
   const calculatedGoal = calculateDailyGoalKcal(profile)
@@ -148,6 +156,7 @@ export function ProfileScreen() {
         Daten importieren
         <input type="file" accept="application/json" onChange={handleImport} />
       </label>
+      {importError && <p role="alert">{importError}</p>}
     </section>
   )
 }

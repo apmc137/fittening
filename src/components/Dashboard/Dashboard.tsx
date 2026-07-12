@@ -37,7 +37,7 @@ export function Dashboard() {
 
   const goal = profile.manualDailyGoalKcal ?? calculateDailyGoalKcal(profile)
   const remaining = goal - totals.eaten + totals.burned
-  const progressPercent = Math.min(100, (totals.eaten / goal) * 100)
+  const progressPercent = goal > 0 ? Math.min(100, (totals.eaten / goal) * 100) : 0
 
   return (
     <section>
