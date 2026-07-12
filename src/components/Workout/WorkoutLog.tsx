@@ -81,15 +81,22 @@ export function WorkoutLog() {
             onChange={(e) => setDurationMinutes(Number(e.target.value))}
           />
         </label>
-        <button type="submit">Hinzufügen</button>
+        <button type="submit" className="primary">
+          Hinzufügen
+        </button>
       </form>
 
       <h2>Heute</h2>
+      {entries.length === 0 && <p className="empty-list">Noch keine Einträge heute.</p>}
       <ul>
         {entries.map((entry) => (
           <li key={entry.id}>
-            {ACTIVITY_LABELS[entry.activityType]} — {entry.durationMinutes} min — {entry.estimatedKcalBurned} kcal
-            <button onClick={() => handleDelete(entry.id!)}>Löschen</button>
+            <span>
+              {ACTIVITY_LABELS[entry.activityType]} — {entry.durationMinutes} min — {entry.estimatedKcalBurned} kcal
+            </span>
+            <button className="danger-ghost" onClick={() => handleDelete(entry.id!)} aria-label="Löschen">
+              🗑
+            </button>
           </li>
         ))}
       </ul>

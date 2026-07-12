@@ -145,18 +145,22 @@ export function ProfileScreen() {
             }
           />
         </label>
-        <button type="submit">Speichern</button>
-        {saved && <p>Gespeichert!</p>}
+        <button type="submit" className="primary">
+          Speichern
+        </button>
+        {saved && <p role="status">Gespeichert!</p>}
       </form>
       <h2>Backup</h2>
-      <button type="button" onClick={handleExport}>
-        Daten exportieren
-      </button>
-      <label>
-        Daten importieren
-        <input type="file" accept="application/json" onChange={handleImport} />
-      </label>
-      {importError && <p role="alert">{importError}</p>}
+      <div className="card">
+        <button type="button" onClick={handleExport}>
+          Daten exportieren
+        </button>
+        <label>
+          Daten importieren
+          <input type="file" accept="application/json" onChange={handleImport} />
+        </label>
+        {importError && <p role="alert">{importError}</p>}
+      </div>
     </section>
   )
 }

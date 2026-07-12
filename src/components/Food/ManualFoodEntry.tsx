@@ -58,7 +58,9 @@ export function ManualFoodEntry({ onSaved, onCancel }: ManualFoodEntryProps) {
         Fett (g)
         <input type="number" value={fat} onChange={(e) => setFat(Number(e.target.value))} />
       </label>
-      <button type="submit">Hinzufügen</button>
+      <button type="submit" className="primary">
+        Hinzufügen
+      </button>
       <button type="button" onClick={onCancel}>
         Abbrechen
       </button>

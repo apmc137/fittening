@@ -46,9 +46,11 @@ export function BarcodeScanner({ onDetected, onCancel }: BarcodeScannerProps) {
   }, [onDetected, onCancel])
 
   return (
-    <div>
-      <div id={SCANNER_ELEMENT_ID} />
-      <button onClick={onCancel}>Abbrechen</button>
+    <div className="stack">
+      <div id={SCANNER_ELEMENT_ID} className="scanner-viewport" />
+      <button type="button" onClick={onCancel}>
+        Abbrechen
+      </button>
     </div>
   )
 }

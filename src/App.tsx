@@ -7,11 +7,11 @@ import './App.css'
 
 type Tab = 'dashboard' | 'food' | 'workout' | 'profile'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'dashboard', label: 'Übersicht' },
-  { id: 'food', label: 'Essen' },
-  { id: 'workout', label: 'Sport' },
-  { id: 'profile', label: 'Profil' },
+const TABS: { id: Tab; label: string; icon: string }[] = [
+  { id: 'dashboard', label: 'Übersicht', icon: '📊' },
+  { id: 'food', label: 'Essen', icon: '🍽️' },
+  { id: 'workout', label: 'Sport', icon: '🏃' },
+  { id: 'profile', label: 'Profil', icon: '👤' },
 ]
 
 export function App() {
@@ -32,7 +32,8 @@ export function App() {
             className={activeTab === tab.id ? 'active' : ''}
             onClick={() => setActiveTab(tab.id)}
           >
-            {tab.label}
+            <span className="tab-icon">{tab.icon}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
       </nav>

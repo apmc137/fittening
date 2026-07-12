@@ -88,7 +88,7 @@ export function FoodLog() {
       {error && <p role="alert">{error}</p>}
 
       {mode === 'idle' && !pending && (
-        <div>
+        <div className="button-row">
           <button onClick={() => setMode('scan')}>Barcode scannen</button>
           <button onClick={() => setMode('search')}>Lebensmittel suchen</button>
           <button onClick={() => setMode('manual')}>Manuell eintragen</button>
@@ -104,24 +104,31 @@ export function FoodLog() {
       {mode === 'manual' && <ManualFoodEntry onSaved={handleManualSaved} onCancel={() => setMode('idle')} />}
 
       {pending && (
-        <div>
+        <div className="card">
           <p>{pending.productName}</p>
           <p>{pending.kcalPer100g} kcal / 100g</p>
           <label>
             Menge (g)
             <input type="number" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
           </label>
-          <button onClick={confirmPending}>Hinzufügen</button>
+          <button className="primary" onClick={confirmPending}>
+            Hinzufügen
+          </button>
           <button onClick={() => setPending(null)}>Abbrechen</button>
         </div>
       )}
 
       <h2>Heute</h2>
+      {todayEntries.length === 0 && <p className="empty-list">Noch keine Einträge heute.</p>}
       <ul>
         {todayEntries.map((entry) => (
           <li key={entry.id}>
-            {entry.productName} — {entry.kcal} kcal ({entry.quantity}g)
-            <button onClick={() => handleDelete(entry.id!)}>Löschen</button>
+            <span>
+              {entry.productName} — {entry.kcal} kcal ({entry.quantity}g)
+            </span>
+            <button className="danger-ghost" onClick={() => handleDelete(entry.id!)} aria-label="Löschen">
+              🗑
+            </button>
           </li>
         ))}
       </ul>

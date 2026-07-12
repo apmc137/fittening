@@ -32,7 +32,14 @@ export function Dashboard() {
   }
 
   if (!profile) {
-    return <p>Bitte zuerst dein Profil im Tab "Profil" ausfüllen.</p>
+    return (
+      <section>
+        <h1>Heute</h1>
+        <div className="empty-state">
+          <p>Bitte zuerst dein Profil im Tab "Profil" ausfüllen.</p>
+        </div>
+      </section>
+    )
   }
 
   const goal = profile.manualDailyGoalKcal ?? calculateDailyGoalKcal(profile)
@@ -42,13 +49,29 @@ export function Dashboard() {
   return (
     <section>
       <h1>Heute</h1>
-      <div className="progress-bar">
-        <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }} />
+      <div
+        className="progress-ring"
+        style={{ background: `conic-gradient(var(--accent) ${progressPercent}%, var(--track) 0)` }}
+      >
+        <div className="progress-ring-inner">
+          <span className="progress-ring-value">{remaining}</span>
+          <span className="progress-ring-label">kcal übrig</span>
+        </div>
       </div>
-      <p>Ziel: {goal} kcal</p>
-      <p>Gegessen: {totals.eaten} kcal</p>
-      <p>Verbrannt: {totals.burned} kcal</p>
-      <p>Verbleibend: {remaining} kcal</p>
+      <div className="stat-grid">
+        <div className="stat-card">
+          <span className="stat-label">Ziel</span>
+          <span className="stat-value">{goal}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Gegessen</span>
+          <span className="stat-value stat-eaten">{totals.eaten}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Verbrannt</span>
+          <span className="stat-value stat-burned">{totals.burned}</span>
+        </div>
+      </div>
     </section>
   )
 }

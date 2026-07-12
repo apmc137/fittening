@@ -29,11 +29,11 @@ export function FoodSearch({ onSelect, onCancel }: FoodSearchProps) {
   }
 
   return (
-    <div>
+    <div className="stack">
       <form onSubmit={handleSearch}>
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="z.B. Brokkoli" />
-        <button type="submit" disabled={loading}>
-          Suchen
+        <button type="submit" className="primary" disabled={loading}>
+          {loading ? 'Suche…' : 'Suchen'}
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
@@ -46,7 +46,9 @@ export function FoodSearch({ onSelect, onCancel }: FoodSearchProps) {
           </li>
         ))}
       </ul>
-      <button onClick={onCancel}>Abbrechen</button>
+      <button type="button" onClick={onCancel}>
+        Abbrechen
+      </button>
     </div>
   )
 }
