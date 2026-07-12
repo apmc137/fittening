@@ -1,0 +1,49 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1;
+  padding: 1rem;
+  padding-bottom: 5rem;
+  overflow-y: auto;
+}
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  border-top: 1px solid #ddd;
+  background: white;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-bar button {
+  flex: 1;
+  padding: 0.75rem 0;
+  border: none;
+  background: none;
+  font-size: 0.85rem;
+}
+
+.tab-bar button.active {
+  font-weight: bold;
+  color: #1f2933;
+}
+
+.progress-bar {
+  background: #eee;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-bar-fill {
+  background: #1f2933;
+  height: 100%;
+}
