@@ -12,13 +12,17 @@ export function FoodSearch({ onSelect, onCancel }: FoodSearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<FoodSearchResult[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSearch(event: FormEvent) {
     event.preventDefault()
     setLoading(true)
+    setError(null)
     try {
       const found = await searchFoodByName(query)
       setResults(found)
+    } catch {
+      setError('Suche fehlgeschlagen. Prüfe deine Internetverbindung.')
     } finally {
       setLoading(false)
     }
@@ -32,6 +36,7 @@ export function FoodSearch({ onSelect, onCancel }: FoodSearchProps) {
           Suchen
         </button>
       </form>
+      {error && <p role="alert">{error}</p>}
       <ul>
         {results.map((result) => (
           <li key={result.fdcId}>
