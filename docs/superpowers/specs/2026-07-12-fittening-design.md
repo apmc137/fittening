@@ -17,7 +17,10 @@ Persönliche Progressive-Web-App (PWA) für Alex zum Tracken von Ernährung (Kal
 - **PWA-Tooling:** `vite-plugin-pwa` für Service Worker (Offline-Caching, Installierbarkeit)
 - **Lokale Datenhaltung:** IndexedDB via `Dexie.js` — alle Nutzerdaten bleiben ausschließlich auf dem Gerät
 - **Hosting:** GitHub Pages im Repo `apmc137/fittening`, automatischer Deploy via GitHub Actions bei Push auf `main`
-- **Externe API:** [Open Food Facts](https://world.openfoodfacts.org/data) für Barcode-Lookup (kostenlos, kein API-Key). Nur für den Lookup-Moment ist Internet nötig — die App selbst läuft offline.
+- **Externe APIs:**
+  - [Open Food Facts](https://world.openfoodfacts.org/data) für Barcode-Lookup verpackter Produkte (kostenlos, kein API-Key).
+  - [USDA FoodData Central](https://fdc.nal.usda.gov/api-guide) für Namens-Suche generischer/frischer Lebensmittel ohne Barcode (z.B. "Brokkoli") — sehr gute Abdeckung für Grundzutaten, kostenlos mit API-Key.
+  - Nur für den Lookup-Moment ist Internet nötig — die App selbst läuft offline.
 
 ## Datenmodell (lokal, IndexedDB via Dexie)
 
@@ -30,7 +33,8 @@ UserProfile
 FoodEntry
   - id, date, time
   - productName, barcode?
-  - kcal, protein, carbs, fat
+  - source (barcode | search | manual)
+  - kcal, protein, carbs, fat   // Werte für die tatsächlich geloggte Menge
   - quantity
 
 WorkoutEntry
@@ -44,16 +48,17 @@ WorkoutEntry
 
 1. **Onboarding:** Profil einmalig ausfüllen (Alter, Gewicht, Größe, Aktivitätslevel, Ziel) → App berechnet Tagesziel per Mifflin-St-Jeor-Formel. Jederzeit im Profil einsehbar und manuell überschreibbar.
 2. **Essen loggen:**
-   - Primärweg: Barcode per Kamera scannen (`html5-qrcode` oder vergleichbare Lib) → Lookup via Open Food Facts → kcal/Makros automatisch übernehmen, Menge anpassen.
-   - Fallback: Manuelle Eingabe (Produktname, kcal, Makros, Menge) — greift wenn Scan fehlschlägt, Produkt nicht gefunden wird, oder kein Netz verfügbar ist.
+   - **Barcode-Scan** (verpackte Produkte): Kamera scannen (`html5-qrcode` oder vergleichbare Lib) → Lookup via Open Food Facts → kcal/Makros automatisch übernehmen, Menge anpassen.
+   - **Namens-Suche** (frische/generische Lebensmittel ohne Barcode, z.B. "Brokkoli"): Freitext eintippen → Treffer aus USDA FoodData Central (kcal/Makros pro 100g) auswählen → nur noch Menge eingeben (z.B. 150g), App berechnet kcal/Makros für die Menge automatisch.
+   - **Fallback (rein manuell):** Produktname, kcal, Makros, Menge komplett selbst eintragen — greift wenn kein Treffer gefunden wird oder kein Netz verfügbar ist.
 3. **Sport loggen:** Aktivität aus fester Liste wählen (Laufen, Kraft, Rad, Yoga, …), Dauer + Intensität eintragen → App schätzt verbrannte kcal via MET-Wert × Körpergewicht.
 4. **Tagesübersicht (Dashboard):** Kalorien gegessen vs. verbrannt vs. Tagesziel (visuell, z.B. Ring/Balken), plus einfacher Verlauf über die letzten Tage/Wochen.
 5. **Backup/Export:** Button zum Export aller Daten als JSON-Datei (Download) sowie Import derselben — Sicherheitsnetz gegen Datenverlust bei Neuinstallation/Gerätewechsel, da es keine Cloud-Sync gibt.
 
 ## Fehlerbehandlung / Edge Cases
 
-- Kein Netz beim Barcode-Scan → Hinweis anzeigen, manuelle Eingabe bleibt jederzeit möglich; App-Grundfunktion (Anzeige, bereits geloggte Daten, Sport-Logging) funktioniert vollständig offline.
-- Barcode nicht in Open Food Facts gefunden → manuelle Eingabe.
+- Kein Netz beim Barcode-Scan/bei der Namens-Suche → Hinweis anzeigen, manuelle Eingabe bleibt jederzeit möglich; App-Grundfunktion (Anzeige, bereits geloggte Daten, Sport-Logging) funktioniert vollständig offline.
+- Barcode nicht in Open Food Facts gefunden, oder kein Treffer bei der Namens-Suche in USDA FoodData Central → manuelle Eingabe.
 - Kamera-Zugriff vom Nutzer verweigert → manuelle Suche/Eingabe bleibt immer verfügbar, kein Blocker.
 
 ## Testing
