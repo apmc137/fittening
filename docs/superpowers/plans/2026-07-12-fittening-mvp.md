@@ -2230,7 +2230,209 @@ git commit -m "Add JSON backup export/import"
 
 ---
 
-## Task 16: GitHub Pages Deploy Workflow & PWA Icons
+## Task 16: German→English Food Search Fallback
+
+**Context:** Discovered during Task 12 verification: USDA FoodData Central only understands English queries. A German search like "Brokkoli" returns zero hits; "Broccoli" works. Alex (German-speaking, personal use) chose a small hardcoded DE→EN dictionary as a fallback: try the query as typed first, and if that returns zero results, look up a translation and retry once.
+
+**Files:**
+- Create: `src/lib/foodNameTranslation.ts`
+- Test: `src/lib/foodNameTranslation.test.ts`
+- Modify: `src/lib/usdaFoodData.ts`
+
+**Interfaces:**
+- Produces: `function translateFoodNameToEnglish(query: string): string | null` — case-insensitive, whitespace-trimmed lookup against a fixed dictionary of common German food names; returns `null` if no translation is known.
+- Consumes/Modifies: `searchFoodByName` (Task 7) gains a translate-and-retry fallback; its exported signature (`(query: string) => Promise<FoodSearchResult[]>`) is unchanged, so `FoodSearch.tsx` (Task 12) needs no changes.
+
+- [ ] **Step 1: Write the failing test**
+
+Create `src/lib/foodNameTranslation.test.ts`:
+
+```ts
+import { describe, expect, it } from 'vitest'
+import { translateFoodNameToEnglish } from './foodNameTranslation'
+
+describe('translateFoodNameToEnglish', () => {
+  it('translates a known German food name to English', () => {
+    expect(translateFoodNameToEnglish('Brokkoli')).toBe('broccoli')
+  })
+
+  it('is case-insensitive and trims whitespace', () => {
+    expect(translateFoodNameToEnglish('  BROKKOLI  ')).toBe('broccoli')
+  })
+
+  it('returns null for unknown terms', () => {
+    expect(translateFoodNameToEnglish('Quinoa-Superfood-Bowl')).toBeNull()
+  })
+})
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/lib/foodNameTranslation.test.ts`
+Expected: FAIL — `Cannot find module './foodNameTranslation'`.
+
+- [ ] **Step 3: Write the implementation**
+
+Create `src/lib/foodNameTranslation.ts`:
+
+```ts
+// Kleines DE->EN-Wörterbuch für häufige Lebensmittel, da USDA FoodData
+// Central nur englische Suchbegriffe versteht. Deckt Alltagskost ab,
+// nicht erschöpfend.
+const DE_EN_FOOD_TRANSLATIONS: Record<string, string> = {
+  brokkoli: 'broccoli',
+  apfel: 'apple',
+  banane: 'banana',
+  kartoffel: 'potato',
+  süßkartoffel: 'sweet potato',
+  tomate: 'tomato',
+  gurke: 'cucumber',
+  karotte: 'carrot',
+  möhre: 'carrot',
+  zwiebel: 'onion',
+  knoblauch: 'garlic',
+  paprika: 'bell pepper',
+  spinat: 'spinach',
+  salat: 'lettuce',
+  huhn: 'chicken',
+  hähnchenbrust: 'chicken breast',
+  hühnchen: 'chicken',
+  pute: 'turkey',
+  putenbrust: 'turkey breast',
+  rindfleisch: 'beef',
+  schweinefleisch: 'pork',
+  fisch: 'fish',
+  lachs: 'salmon',
+  thunfisch: 'tuna',
+  garnelen: 'shrimp',
+  ei: 'egg',
+  eier: 'eggs',
+  milch: 'milk',
+  käse: 'cheese',
+  joghurt: 'yogurt',
+  quark: 'quark',
+  sahne: 'cream',
+  butter: 'butter',
+  brot: 'bread',
+  vollkornbrot: 'whole wheat bread',
+  reis: 'rice',
+  nudeln: 'pasta',
+  haferflocken: 'oats',
+  mandeln: 'almonds',
+  walnüsse: 'walnuts',
+  erdnüsse: 'peanuts',
+  erdnussbutter: 'peanut butter',
+  linsen: 'lentils',
+  bohnen: 'beans',
+  kichererbsen: 'chickpeas',
+  tofu: 'tofu',
+  avocado: 'avocado',
+  erdbeeren: 'strawberries',
+  himbeeren: 'raspberries',
+  blaubeeren: 'blueberries',
+  trauben: 'grapes',
+  birne: 'pear',
+  zitrone: 'lemon',
+  limette: 'lime',
+  ananas: 'pineapple',
+  mango: 'mango',
+  wassermelone: 'watermelon',
+  honig: 'honey',
+  zucker: 'sugar',
+  olivenöl: 'olive oil',
+  salz: 'salt',
+  pfeffer: 'pepper',
+  zimt: 'cinnamon',
+  schokolade: 'chocolate',
+  kaffee: 'coffee',
+  tee: 'tea',
+  blumenkohl: 'cauliflower',
+  rosenkohl: 'brussels sprouts',
+  kürbis: 'pumpkin',
+  zucchini: 'zucchini',
+  aubergine: 'eggplant',
+  sellerie: 'celery',
+  pflaume: 'plum',
+  pfirsich: 'peach',
+  kiwi: 'kiwi',
+  müsli: 'granola',
+  hummus: 'hummus',
+  senf: 'mustard',
+}
+
+export function translateFoodNameToEnglish(query: string): string | null {
+  const normalized = query.trim().toLowerCase()
+  return DE_EN_FOOD_TRANSLATIONS[normalized] ?? null
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npx vitest run src/lib/foodNameTranslation.test.ts`
+Expected: PASS (3 tests).
+
+- [ ] **Step 5: Wire the fallback into `searchFoodByName`**
+
+Modify `src/lib/usdaFoodData.ts`. Add the import at the top:
+
+```ts
+import { translateFoodNameToEnglish } from './foodNameTranslation'
+```
+
+Replace the existing `searchFoodByName` function with:
+
+```ts
+export async function searchFoodByName(query: string): Promise<FoodSearchResult[]> {
+  const results = await performUsdaSearch(query)
+  if (results.length > 0) {
+    return results
+  }
+  const translated = translateFoodNameToEnglish(query)
+  if (!translated) {
+    return results
+  }
+  return performUsdaSearch(translated)
+}
+
+async function performUsdaSearch(query: string): Promise<FoodSearchResult[]> {
+  const apiKey = import.meta.env.VITE_USDA_API_KEY
+  const url = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=10&api_key=${apiKey}`
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`USDA FoodData Central request failed: ${response.status}`)
+  }
+  const data = await response.json()
+  return parseUsdaSearchResponse(data)
+}
+```
+
+This is a pure rename-and-wrap of the existing fetch logic (previously inline in `searchFoodByName`, now in `performUsdaSearch`) plus the new fallback branch — `parseUsdaSearchResponse` and its exact behavior are untouched.
+
+- [ ] **Step 6: Run the full lib test suite to confirm nothing broke**
+
+Run: `npx vitest run src/lib/usdaFoodData.test.ts src/lib/foodNameTranslation.test.ts`
+Expected: PASS (3 + 3 = 6 tests). `usdaFoodData.test.ts` only tests `parseUsdaSearchResponse`, which is untouched, so it should still pass unmodified.
+
+- [ ] **Step 7: Manually verify in the browser**
+
+Run: `npm run dev`, go to Essen → "Lebensmittel suchen", type "Brokkoli", submit.
+Expected: Real USDA results for broccoli now appear (previously zero). Typing "Broccoli" directly should behave exactly as before (no regression — the as-typed query still tries first).
+
+- [ ] **Step 8: Verify the build**
+
+Run: `npm run build`
+Expected: Succeeds with no TypeScript errors.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add src/lib/foodNameTranslation.ts src/lib/foodNameTranslation.test.ts src/lib/usdaFoodData.ts
+git commit -m "Add German-to-English food name translation fallback for USDA search"
+```
+
+---
+
+## Task 17: GitHub Pages Deploy Workflow & PWA Icons
 
 **Files:**
 - Create: `public/icons/icon-192.png`
