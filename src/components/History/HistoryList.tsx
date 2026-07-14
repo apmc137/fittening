@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { db } from '../../db/db'
-import { groupEntriesByDay } from '../../lib/history'
-import type { DaySummary } from '../../lib/history'
+import { groupEntriesByDay, calculateGoalStatus } from '../../lib/history'
+import type { DaySummary, GoalStatus } from '../../lib/history'
+
+const STATUS_LABEL: Record<GoalStatus, string> = {
+  met: 'Ziel eingehalten',
+  under: 'Ziel unterboten',
+  over: 'Ziel überboten',
+}
 
 interface HistoryListProps {
   goal: number | null
@@ -38,25 +44,21 @@ export function HistoryList({ goal, excludeDate }: HistoryListProps) {
       {visibleDays.length === 0 && <p className="empty-list">Noch keine vergangenen Einträge.</p>}
       <ul>
         {visibleDays.map((day) => {
-          const remaining = goal !== null ? goal - day.eaten + day.burned : null
+          const netKcal = day.eaten - day.burned
+          const status = goal !== null ? calculateGoalStatus(netKcal, goal) : null
           const isExpanded = expanded === day.date
           return (
             <li key={day.date} className="history-row">
               <button onClick={() => setExpanded(isExpanded ? null : day.date)}>
                 <div className="history-row-header">
                   <span className="history-date">{formatDisplayDate(day.date)}</span>
-                  <span className="history-stats">
-                    <span className="stat-eaten">{day.eaten} kcal</span>
-                    {' · '}
-                    <span className="stat-burned">{day.burned} kcal</span>
-                    {remaining !== null && (
-                      <>
-                        {' · '}
-                        <span>{remaining >= 0 ? `${remaining} übrig` : `${-remaining} über Ziel`}</span>
-                      </>
-                    )}
-                  </span>
+                  {status && <span className={`badge badge-${status}`}>{STATUS_LABEL[status]}</span>}
                 </div>
+                <span className="history-stats">
+                  <span className="stat-eaten">{day.eaten} kcal</span>
+                  {' · '}
+                  <span className="stat-burned">{day.burned} kcal</span>
+                </span>
               </button>
               {isExpanded && (
                 <div className="history-details">

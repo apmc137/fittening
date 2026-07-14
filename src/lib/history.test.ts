@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupEntriesByDay } from './history'
+import { groupEntriesByDay, calculateGoalStatus } from './history'
 import type { FoodEntry, WorkoutEntry } from '../db/types'
 
 function food(date: string, kcal: number): FoodEntry {
@@ -69,5 +69,29 @@ describe('groupEntriesByDay', () => {
     expect(result[0].burned).toBe(250)
     expect(result[0].foodEntries).toEqual([])
     expect(result[0].workoutEntries).toHaveLength(1)
+  })
+})
+
+describe('calculateGoalStatus', () => {
+  it('is "met" when net kcal is exactly on goal', () => {
+    expect(calculateGoalStatus(2000, 2000)).toBe('met')
+  })
+
+  it('is "met" within the ±100 kcal tolerance', () => {
+    expect(calculateGoalStatus(2099, 2000)).toBe('met')
+    expect(calculateGoalStatus(1901, 2000)).toBe('met')
+  })
+
+  it('is "met" right at the tolerance boundary', () => {
+    expect(calculateGoalStatus(2100, 2000)).toBe('met')
+    expect(calculateGoalStatus(1900, 2000)).toBe('met')
+  })
+
+  it('is "over" once net kcal exceeds goal + tolerance', () => {
+    expect(calculateGoalStatus(2101, 2000)).toBe('over')
+  })
+
+  it('is "under" once net kcal falls below goal - tolerance', () => {
+    expect(calculateGoalStatus(1899, 2000)).toBe('under')
   })
 })

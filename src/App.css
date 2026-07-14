@@ -292,8 +292,9 @@ li > button:not(.danger-ghost) {
 
 .history-row-header {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .history-date {
@@ -301,8 +302,33 @@ li > button:not(.danger-ghost) {
 }
 
 .history-stats {
+  display: block;
+  margin-top: 0.3rem;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge-met {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.badge-under {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.badge-over {
+  color: var(--danger);
+  background: var(--danger-soft);
 }
 
 .history-details {

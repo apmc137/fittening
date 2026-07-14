@@ -34,3 +34,14 @@ export function groupEntriesByDay(foodEntries: FoodEntry[], workoutEntries: Work
 
   return [...byDate.values()].sort((a, b) => b.date.localeCompare(a.date))
 }
+
+export type GoalStatus = 'met' | 'under' | 'over'
+
+const GOAL_TOLERANCE_KCAL = 100
+
+export function calculateGoalStatus(netKcal: number, goal: number, toleranceKcal = GOAL_TOLERANCE_KCAL): GoalStatus {
+  const diff = netKcal - goal
+  if (diff > toleranceKcal) return 'over'
+  if (diff < -toleranceKcal) return 'under'
+  return 'met'
+}
