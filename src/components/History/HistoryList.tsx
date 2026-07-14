@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { db } from '../../db/db'
-import { calculateDailyGoalKcal } from '../../lib/tdee'
 import { groupEntriesByDay } from '../../lib/history'
 import type { DaySummary } from '../../lib/history'
-import type { UserProfile } from '../../db/types'
+
+interface HistoryListProps {
+  goal: number | null
+  excludeDate?: string
+}
 
 function formatDisplayDate(dateString: string): string {
   const [year, month, day] = dateString.split('-').map(Number)
@@ -14,9 +17,8 @@ function formatDisplayDate(dateString: string): string {
   })
 }
 
-export function HistoryList() {
+export function HistoryList({ goal, excludeDate }: HistoryListProps) {
   const [days, setDays] = useState<DaySummary[]>([])
-  const [goal, setGoal] = useState<number | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
 
   useEffect(() => {
@@ -24,21 +26,18 @@ export function HistoryList() {
   }, [])
 
   async function loadData() {
-    const [profile, foodEntries, workoutEntries] = await Promise.all([
-      db.userProfile.get(1),
-      db.foodEntries.toArray(),
-      db.workoutEntries.toArray(),
-    ])
-    setGoal(profile ? (profile as UserProfile).manualDailyGoalKcal ?? calculateDailyGoalKcal(profile) : null)
+    const [foodEntries, workoutEntries] = await Promise.all([db.foodEntries.toArray(), db.workoutEntries.toArray()])
     setDays(groupEntriesByDay(foodEntries, workoutEntries))
   }
 
+  const visibleDays = excludeDate ? days.filter((day) => day.date !== excludeDate) : days
+
   return (
-    <section>
-      <h1>Verlauf</h1>
-      {days.length === 0 && <p className="empty-list">Noch keine Einträge vorhanden.</p>}
+    <div>
+      <h2>Verlauf</h2>
+      {visibleDays.length === 0 && <p className="empty-list">Noch keine vergangenen Einträge.</p>}
       <ul>
-        {days.map((day) => {
+        {visibleDays.map((day) => {
           const remaining = goal !== null ? goal - day.eaten + day.burned : null
           const isExpanded = expanded === day.date
           return (
@@ -80,6 +79,6 @@ export function HistoryList() {
           )
         })}
       </ul>
-    </section>
+    </div>
   )
 }

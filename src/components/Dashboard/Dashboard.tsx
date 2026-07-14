@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { db } from '../../db/db'
 import { calculateDailyGoalKcal } from '../../lib/tdee'
 import { todayDateString } from '../../lib/date'
+import { HistoryList } from '../History/HistoryList'
 import type { UserProfile } from '../../db/types'
 
 interface DailyTotals {
@@ -38,6 +39,7 @@ export function Dashboard() {
         <div className="empty-state">
           <p>Bitte zuerst dein Profil im Tab "Profil" ausfüllen.</p>
         </div>
+        <HistoryList goal={null} excludeDate={todayDateString()} />
       </section>
     )
   }
@@ -72,6 +74,7 @@ export function Dashboard() {
           <span className="stat-value stat-burned">{totals.burned}</span>
         </div>
       </div>
+      <HistoryList goal={goal} excludeDate={todayDateString()} />
     </section>
   )
 }
