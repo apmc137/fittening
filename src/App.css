@@ -282,6 +282,43 @@ li > button:not(.danger-ghost) {
   color: var(--accent-strong);
 }
 
+/* History */
+
+.history-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.history-row-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.history-date {
+  font-weight: 700;
+}
+
+.history-stats {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.history-details {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.history-details p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
 /* Tab bar */
 
 .tab-bar {

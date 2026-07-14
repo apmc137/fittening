@@ -47,6 +47,16 @@ export function IconWorkout({ className }: IconProps) {
   )
 }
 
+export function IconHistory({ className }: IconProps) {
+  return (
+    <svg {...commonProps} className={className} aria-hidden="true">
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.7-6.2" />
+      <path d="M3 3v4.5h4.5" />
+      <path d="M12 7.5V12l3 2" />
+    </svg>
+  )
+}
+
 export function IconProfile({ className }: IconProps) {
   return (
     <svg {...commonProps} className={className} aria-hidden="true">
